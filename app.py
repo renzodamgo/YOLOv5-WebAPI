@@ -2,11 +2,13 @@
 Simple app to upload an image via a web form
 and view the inference results on the image in the browser.
 """
-from flask import Flask, redirect, render_template, request
-
 import argparse
 # import io
 import os
+
+from flask import Flask, redirect, render_template, request
+from PIL import Image
+
 from inference import get_prediction
 
 app = Flask(__name__)
@@ -22,7 +24,11 @@ def predict():
 
         img_bytes = file.read()
 
-        get_prediction(img_bytes)
+        results = get_prediction(img_bytes)
+        results.render()  # updates results.imgs with boxes and labels
+        for img in results.imgs:
+          img_base64 = Image.fromarray(img)
+          img_base64.save("static/image0.jpg", format="JPEG")
         #img = Image.open(io.BytesIO(img_bytes))
         #results = model(img, size=640)
 
