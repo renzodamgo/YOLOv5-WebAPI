@@ -1,17 +1,16 @@
 """
-Simple app to upload an image via a web form 
+Simple app to upload an image via a web form
 and view the inference results on the image in the browser.
 """
 import argparse
 import io
 import os
-from PIL import Image
 
 import torch
-from flask import Flask, render_template, request, redirect
+from flask import Flask, redirect, render_template, request
+from PIL import Image
 
 app = Flask(__name__)
-
 
 @app.route("/", methods=["GET", "POST"])
 def predict():
@@ -45,7 +44,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     model = torch.hub.load(
-        "ultralytics/yolov5", "yolov5s", pretrained=True, force_reload=True, autoshape=True
+        "ultralytics/yolov5", "custom", path='./best.pt', force_reload=True, autoshape=True
     )  # force_reload = recache latest code
     model.eval()
     app.run(host="0.0.0.0", port=args.port)  # debug=True causes Restarting with stat
