@@ -5,8 +5,9 @@ RUN apt-get install ffmpeg libsm6 libxext6  -y
 
 WORKDIR /app
 ADD . /app
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 5000
+RUN adduser -D myuser
+USER myuser
 
-CMD ["python", "restapi.py", "--port=5000"]
+CMD gunicorn --bind 0.0.0.0:$PORT wsgi
