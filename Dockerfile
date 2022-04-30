@@ -7,7 +7,4 @@ WORKDIR /app
 ADD . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN adduser -D myuser
-USER myuser
-
 CMD gunicorn --bind 0.0.0.0:$PORT wsgi
