@@ -8,10 +8,14 @@ import os
 
 from flask import Flask, redirect, render_template, request
 from PIL import Image
+import string
+import random
 
 from inference import get_prediction
 
 app = Flask(__name__)
+
+DETECTION_URL = "/detect"
 
 @app.route("/", methods=["GET", "POST"])
 def predict():
@@ -23,12 +27,14 @@ def predict():
             return
 
         img_bytes = file.read()
+        letters = string.ascii_lowercase
 
         results = get_prediction(img_bytes)
         results.render()  # updates results.imgs with boxes and labels
         for img in results.imgs:
           img_base64 = Image.fromarray(img)
-          img_base64.save("static/image0.jpg", format="JPEG")
+          img_name = 'static/prediction_'+''.join(random.choice(letters) for i in range(10)) + '.jpg'
+          img_base64.save(img_name, format="JPEG")
         #img = Image.open(io.BytesIO(img_bytes))
         #results = model(img, size=640)
 
@@ -37,9 +43,23 @@ def predict():
         # return data
 
 
-        return redirect("static/image0.jpg")
+        return redirect(img_name)
 
     return render_template("index.html")
+
+
+@app.route(DETECTION_URL, methods=["POST"])
+def predictREST():
+    if not request.method == "POST":
+        return
+
+    if request.files.get("image"):
+        image_file = request.files["image"]
+        image_bytes = image_file.read()
+
+        results = get_prediction(image_bytes)
+        data = results.pandas().xyxy[0].to_json(orient="records")
+        return data
 
 
 if __name__ == "__main__":
