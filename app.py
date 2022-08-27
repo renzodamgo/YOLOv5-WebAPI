@@ -6,7 +6,7 @@ import argparse
 import base64
 import random
 import string
-
+import json
 from flask import Flask, redirect, render_template, request
 from PIL import Image
 
@@ -17,35 +17,35 @@ app = Flask(__name__)
 DETECTION_URL = "/detect"
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
 def predict():
-    if request.method == "POST":
-        if "file" not in request.files:
-            return redirect(request.url)
-        file = request.files["file"]
-        if not file:
-            return
+    if request.method == "GET":
+        # if "file" not in request.files:
+        #     return redirect(request.url)
+        # file = request.files["file"]
+        # if not file:
+        #     return
 
-        img_bytes = file.read()
-        letters = string.ascii_lowercase
+        # img_bytes = file.read()
+        # letters = string.ascii_lowercase
 
-        results = get_prediction(img_bytes)
-        results.render()  # updates results.imgs with boxes and labels
-        for img in results.imgs:
-            img_base64 = Image.fromarray(img)
-            img_name = 'static/prediction_' + \
-                ''.join(random.choice(letters) for i in range(10)) + '.jpg'
-            img_base64.save(img_name, format="JPEG")
-        #img = Image.open(io.BytesIO(img_bytes))
-        #results = model(img, size=640)
+        # results = get_prediction(img_bytes)
+        # results.render()  # updates results.imgs with boxes and labels
+        # for img in results.imgs:
+        #     img_base64 = Image.fromarray(img)
+        #     img_name = 'static/prediction_' + \
+        #         ''.join(random.choice(letters) for i in range(10)) + '.jpg'
+        #     img_base64.save(img_name, format="JPEG")
+        # #img = Image.open(io.BytesIO(img_bytes))
+        # #results = model(img, size=640)
 
-        # for debugging
-        # data = results.pandas().xyxy[0].to_json(orient="records")
-        # return data
+        # # for debugging
+        # # data = results.pandas().xyxy[0].to_json(orient="records")
+        # # return data
 
-        return redirect(img_name)
+        # return redirect(img_name)
 
-    return render_template("index.html")
+    		return render_template("index.html")
 
 
 # @app.route(DETECTION_URL, methods=["POST"])
@@ -71,8 +71,12 @@ def predictREST():
         base64_data = base64_string.split(',')
         img_data = base64.b64decode(base64_data[1])
         results = get_prediction(img_data)
-        data = results.pandas().xyxy[0].to_json(orient="records")
-        return data
+        # data = results.pandas().xyxy[0].to_json(orient="records")
+        n_personas = results.pandas().xyxy[0].groupby('name')['name'].count()
+        res = {
+						"n_personas": n_personas
+				}
+        return json.dumps(res)
 
 
 if __name__ == "__main__":
