@@ -4,9 +4,10 @@ and view the inference results on the image in the browser.
 """
 import argparse
 import base64
+import json
 import random
 import string
-import json
+
 from flask import Flask, redirect, render_template, request
 from PIL import Image
 
@@ -18,7 +19,7 @@ DETECTION_URL = "/detect"
 
 
 @app.route("/", methods=["GET"])
-def predict():
+def index():
     if request.method == "GET":
         # if "file" not in request.files:
         #     return redirect(request.url)
@@ -62,7 +63,7 @@ def predict():
 #         return data
 
 @app.route(DETECTION_URL, methods=["POST"])
-def predictREST():
+def predict():
     if not request.method == "POST":
         return
 
@@ -74,8 +75,8 @@ def predictREST():
         # data = results.pandas().xyxy[0].to_json(orient="records")
         n_personas = results.pandas().xyxy[0].groupby('name')['name'].count()
         res = {
-						"n_personas": n_personas
-				}
+	        "n_personas": int(n_personas['person'])
+        }
         return json.dumps(res)
 
 
